@@ -1,0 +1,36 @@
+server {
+    listen 80 default_server;
+    listen [::]:80 default_server ipv6only=on;
+    listen 443 ssl;
+    listen [::]:443 default_server ipv6only=on;
+
+    server_name fermolaev.devops.rebrain.srwx.net;
+    root /var/www/mediawiki;
+    index index.php index.html index.htm;
+
+    # RSA certificate
+    ssl_certificate /etc/nginx/certs/fullchain_fermolaev.devops.rebrain.srwx.net; 
+    ssl_certificate_key /etc/nginx/certs/fermolaev.devops.rebrain.srwx.net.key;
+
+    error_log /var/log/nginx/mediawiki.error;
+    access_log /var/log/nginx/mediawiki.access;
+
+    location / {
+        try_files $uri $uri/ /index.php;
+    }
+
+    location ~ /.well-known {
+        allow all;
+    }
+
+    location ~ /\.ht {
+        deny all;
+    }
+
+    location ~ \.php$ {
+        fastcgi_pass unix:/run/php/php7.4-fpm.sock;
+        fastcgi_param SCRIPT_FILENAME $document_root$fastcgi_script_name;
+        include fastcgi_params;
+        include snippets/fastcgi-php.conf;
+    }
+}
